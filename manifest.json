@@ -1,0 +1,28 @@
+{
+  "manifest_version": 3,
+  "name": "Mini Comet",
+  "version": "1.0",
+  "description": "Summarize pages and chat with a local AI (Ollama)",
+  "permissions": [
+    "sidePanel",
+    "activeTab",
+    "scripting",
+    "storage",
+    "tabs"
+  ],
+  "host_permissions": ["http://localhost:11434/*"],
+  "background": { "service_worker": "background.js" },
+  "action": {
+    "default_icon": {
+      "16": "icons/16.png",
+      "48": "icons/48.png",
+      "128": "icons/128.png"
+      // source of icons: https://www.flaticon.com/free-icons/comet
+    }
+  },
+  "side_panel": { "default_path": "sidepanel.html" },
+  "content_scripts": [{
+    "matches": ["<all_urls>"],
+    "js": ["content.js"]
+  }]
+}
