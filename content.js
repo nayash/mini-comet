@@ -20,6 +20,7 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
       const article = new Readability(docClone).parse(); // requires Readability to be injected first
 
       if (article && (article.textContent || article.content)) {
+        console.log(`content.js: article text from Readability`);
         // Return both plain text and HTML for flexible rendering in the side panel
         sendResponse({
           text: article.textContent || '',
@@ -31,6 +32,7 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
         return true; // indicate async-safe path
       }
 
+      console.log(`content.js: article text from fallback`);
       // 2) Fallbacks: try semantic containers before body
       const mainEl =
         document.querySelector('main, article, [role="main"]') ||

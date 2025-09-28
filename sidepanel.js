@@ -142,6 +142,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
   // 2. Get Page Content
   let pageText = "";
+  let responseJson = {};
   try {
     const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
 
@@ -157,6 +158,8 @@ document.addEventListener('DOMContentLoaded', async () => {
     const response = await chrome.tabs.sendMessage(tab.id, { action: "get_page_text" });
     if (!response || !response.text) throw new Error("Could not retrieve page content.");
     pageText = response.text;
+    responseJson = response;
+    console.log(`get_page_text response: ${JSON.stringify(responseJson)}`);
   } catch (error) {
     summaryEl.innerText = error.message;
     setSummaryLoading(false);
@@ -190,14 +193,14 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     // Generate AI response using the summary as primary context
     const chatPrompt = `You are a helpful assistant. Answer the user's question based on the provided summary of a webpage.
-    If the summary does not contain the answer, you may refer to the full text content as a fallback.
+    If the summary does not contain the answer, you may refer to the full content JSON as a fallback.
 
     --- SUMMARY CONTEXT ---
     ${fullSummary}
     -----------------------
 
     --- FULL TEXT (FALLBACK ONLY) ---
-    ${pageText.slice(0, 15000)}
+    ${JSON.stringify(responseJson)}
     ---------------------------------
 
     User Question: "${userPrompt}"
