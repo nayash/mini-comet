@@ -5,15 +5,15 @@
  * @param {string} content - The string, which may be plain text or HTML.
  */
 function renderContent(element, content) {
-  // A simple regex to check for the presence of any HTML tags.
-  const isHtml = /<[a-z][\s\S]*>/i.test(content);
-
-  if (isHtml) {
-    // IMPORTANT: This trusts the AI's output. For a public extension,
-    // you would use a sanitizer like DOMPurify here.
-    element.innerHTML = content;
-  } else {
-    // If no HTML is detected, use textContent for safety and performance.
+  try {
+    console.log(`renderContent: raw content: ${content}`);
+    const rawHtml = marked.parse(content); // Marked parses Markdown -> HTML
+    console.log(`renderContent: output of marked: ${rawHtml}`);
+    const safeHtml = DOMPurify.sanitize(rawHtml, { USE_PROFILES: { html: true } }); // sanitize
+    console.log(`renderContent: output of DOMPurify: ${safeHtml}`);
+    element.innerHTML = safeHtml;
+  } catch (error) {
+    console.log(`renderContent: error: ${error}`);
     element.textContent = content;
   }
 }
@@ -23,8 +23,10 @@ const OLLAMA_API = 'http://localhost:11434/api/generate';
 
 // A more sophisticated prompt for better summaries
 const SUMMARY_PROMPT_TEMPLATE = `You are an expert summarizer. Your task is to analyze a chunk of text from a webpage and extract only the most critical information.
-Ignore navigational elements like menus, ads, headers, footers, and sidebars. Focus on the main content.
-Summarize the key facts, findings, and conclusions as a series of concise bullet points.
+Ignore navigational elements like menus, ads, headers, footers, and sidebars.
+Ignore small thumbnail sections at the bottom.
+If the given text contains such low information content, ignore it.
+Focus on the main content.
 
 Here is the text chunk:
 ---
@@ -98,6 +100,7 @@ async function generateFullSummary(fullText) {
     console.log("Combining chunk summaries into a final report...");
     const combinePrompt = `The following are several summaries from different parts of the same document.
     Combine them into a single, cohesive, and well-structured summary. Remove any redundancies.
+    Summarize the key facts, findings, and conclusions as a series of concise bullet points and markdown text.
 
     ---
     ${chunkSummaries.join('\n\n---\n\n')}
@@ -141,10 +144,16 @@ document.addEventListener('DOMContentLoaded', async () => {
   let pageText = "";
   try {
     const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
+
+    await chrome.scripting.executeScript({
+      target: { tabId: tab.id },
+      files: ['libs/Readability.js'] // vendored from mozilla/readability
+    });
     await chrome.scripting.executeScript({
       target: { tabId: tab.id },
       files: ['content.js']
     });
+
     const response = await chrome.tabs.sendMessage(tab.id, { action: "get_page_text" });
     if (!response || !response.text) throw new Error("Could not retrieve page content.");
     pageText = response.text;
@@ -155,6 +164,7 @@ document.addEventListener('DOMContentLoaded', async () => {
   }
   
   console.log(`pageText length: ${pageText.length}`);
+  console.log(`Full pageText: ${pageText}`);
 
   // 3. Generate and Display the Full Summary
   const fullSummary = await generateFullSummary(pageText);
