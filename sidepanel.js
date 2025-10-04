@@ -352,11 +352,12 @@ document.addEventListener('DOMContentLoaded', async () => {
     Your Answer:`;
 
     const aiResponse = await callOllama(chatPrompt);
-
+    const cleanedSummary = aiResponse.replace(/<think>[\s\S]*?<\/think>/gi, '').trim();
+    console.log(`cleanedSummary: ${cleanedSummary}`);
     // Add AI message to chatbox
     const aiMessageDiv = document.createElement('div');
     aiMessageDiv.className = 'chat-message ai-message';
-    renderContent(aiMessageDiv, aiResponse || "I'm not sure how to respond to that.");
+    renderContent(aiMessageDiv, cleanedSummary || "I'm not sure how to respond to that.");
     chatBox.appendChild(aiMessageDiv);
     chatBox.scrollTop = chatBox.scrollHeight;
 
