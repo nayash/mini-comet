@@ -365,4 +365,20 @@ document.addEventListener('DOMContentLoaded', async () => {
     setChatDisabled(false);
     promptField.focus();
   };
+
+  // 5. Listen for model changes from other tabs
+  chrome.storage.onChanged.addListener((changes, namespace) => {
+    // We only care about changes in local storage for our 'selectedModel' key.
+    if (namespace === 'local' && changes.selectedModel) {
+      const newModel = changes.selectedModel.newValue;
+      // If the new model is different from the current one, update the UI.
+      if (newModel && newModel !== CURRENT_MODEL_ID) {
+        console.log(`Model changed in another tab to: ${newModel}. Updating this panel.`);
+        if (modelSelect) {
+          modelSelect.value = newModel;
+        }
+        CURRENT_MODEL_ID = newModel;
+      }
+    }
+  });
 });
