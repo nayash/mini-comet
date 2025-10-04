@@ -385,8 +385,14 @@ document.addEventListener('DOMContentLoaded', async () => {
   // 6. Listen for reload commands from the background script
   chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
     if (request.action === 'reload_side_panel') {
-      console.log('Reloading side panel for new page content...');
-      window.location.reload();
+      // sender.tab.id is the ID of the tab this side panel instance is associated with.
+      // We only reload if the message's target tabId matches this side panel's tabId.
+      if (sender.tab && sender.tab.id === request.tabId) {
+        console.log(`Reloading side panel for tab ${request.tabId} (this panel's tab)...`);
+        window.location.reload();
+      } else {
+        console.log(`Ignoring reload for tab ${request.tabId}. This panel is for tab ${sender.tab?.id}.`);
+      }
     }
   });
 });

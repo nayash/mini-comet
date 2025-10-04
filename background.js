@@ -45,7 +45,7 @@ chrome.tabs.onUpdated.addListener(async (tabId, changeInfo, tab) => {
       tabUrlCache[tabId] = newUrl; // Update the cache.
       // Send a message to the side panel to reload itself.
       // This is more reliable than setOptions for forcing a refresh.
-      chrome.runtime.sendMessage({ action: 'reload_side_panel' })
+      chrome.runtime.sendMessage({ action: 'reload_side_panel', tabId: tabId })
         .catch(err => console.log("Side panel not open or could not be reached."));
     }
   }
