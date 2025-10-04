@@ -101,9 +101,12 @@ async function generateFullSummary(fullText) {
 
   if (chunkSummaries.length > 1) {
     console.log('Combining chunk summaries into a final report...');
-    const combinePrompt = `The following are several summaries from different parts of the same document.
-    Combine them into a single, cohesive, and well-structured summary. Remove any redundancies.
-    Summarize the key facts, findings, and conclusions as a series of concise bullet points and markdown text.
+    const combinePrompt = `You are a summarization bot. Only provide the summary and nothing else. Do not provide any conversational text, explanations, or prefaces.
+    The following are several summaries from different parts of the same document.
+    1. Combine them into a single, cohesive, and well-structured summary.
+    2. Remove any redundancies.
+    3. Summarize the key facts, findings, and conclusions as a series of concise list items (where appropritate) in markdown format.
+    4. Only output the direct summary, nothing else. Do not include explanations, meta commentary, or repeat my instructions.
 
     ---
     ${chunkSummaries.join('\n\n---\n\n')}
@@ -308,7 +311,11 @@ document.addEventListener('DOMContentLoaded', async () => {
 
   // 3. Generate and Display the Full Summary
   const fullSummary = await generateFullSummary(pageText);
-  renderContent(summaryEl, fullSummary);
+  // Remove all <think>...</think> blocks and their contents (non-greedy)
+  const cleanedSummary = fullSummary.replace(/<think>[\s\S]*?<\/think>/gi, '').trim();
+  console.log(`cleanedSummary: ${cleanedSummary}`);
+  renderContent(summaryEl, cleanedSummary);
+
   setSummaryLoading(false);
   setChatDisabled(false);
   promptField.focus();
