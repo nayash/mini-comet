@@ -6,12 +6,12 @@ chrome.action.onClicked.addListener(async (tab) => {
   console.log(`background.js onClicked called: ${tab.id}`);
   // Get the content of the current tab via a content script
   // Set the side panel for the current tab and open it.
+  chrome.sidePanel.open({ tabId: tab.id });
   await chrome.sidePanel.setOptions({
     tabId: tab.id,
     path: 'sidepanel.html',
     enabled: true
   });
-  chrome.sidePanel.open({ tabId: tab.id });
 });
 
 // When the user switches to a different tab.
