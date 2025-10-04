@@ -32,17 +32,21 @@ chrome.tabs.onUpdated.addListener(async (tabId, changeInfo, tab) => {
     return;
   }
 
-  // The 'status' property is a reliable indicator for reloads and new page navigations.
-  if (changeInfo.status === 'loading') {
+  // A URL change can happen with or without a full page load (e.g., in SPAs).
+  // We check for 'url' in changeInfo to catch these navigations.
+  if (changeInfo.url) {
     // Normalize the URL by removing the hash, as hash changes don't reload the page content.
-    const newUrl = tab.url.split('#')[0];
+    const newUrl = changeInfo.url.split('#')[0];
     const oldUrl = tabUrlCache[tabId];
 
     // If the URL (without the hash) has changed, it's a new page.
     if (newUrl !== oldUrl) {
-      console.log(`New page loaded in tab ${tabId}: ${newUrl}`);
+      console.log(`URL changed in tab ${tabId}: ${newUrl}`);
       tabUrlCache[tabId] = newUrl; // Update the cache.
-      await chrome.sidePanel.setOptions({ tabId, path: 'sidepanel.html', enabled: true });
+      // Send a message to the side panel to reload itself.
+      // This is more reliable than setOptions for forcing a refresh.
+      chrome.runtime.sendMessage({ action: 'reload_side_panel' })
+        .catch(err => console.log("Side panel not open or could not be reached."));
     }
   }
 });
