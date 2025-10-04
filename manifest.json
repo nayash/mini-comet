@@ -11,15 +11,19 @@
     "tabs"
   ],
   "host_permissions": ["http://localhost:11434/*"],
+  "host_permissions": [
+    "http://localhost:11434/*",
+    "<all_urls>"
+  ],
   "background": { "service_worker": "background.js" },
   "action": {
     "default_icon": {
       "16": "icons/16.png",
       "48": "icons/48.png",
       "128": "icons/128.png"
+      // source of icons: https://www.flaticon.com/free-icons/comet
     }
   },
-  "side_panel": { "default_path": "sidepanel.html" },
   "content_scripts": [{
     "matches": ["<all_urls>"],
     "js": ["content.js"]
