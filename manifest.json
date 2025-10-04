@@ -17,7 +17,6 @@
       "16": "icons/16.png",
       "48": "icons/48.png",
       "128": "icons/128.png"
-      // source of icons: https://www.flaticon.com/free-icons/comet
     }
   },
   "side_panel": { "default_path": "sidepanel.html" },
